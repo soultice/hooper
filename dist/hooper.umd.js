@@ -2152,6 +2152,7 @@ __webpack_require__.d(__webpack_exports__, "Pagination", function() { return /* 
 __webpack_require__.d(__webpack_exports__, "Navigation", function() { return /* reexport */ Navigation; });
 __webpack_require__.d(__webpack_exports__, "Icon", function() { return /* reexport */ Icon; });
 __webpack_require__.d(__webpack_exports__, "addonMixin", function() { return /* reexport */ Mixin; });
+__webpack_require__.d(__webpack_exports__, "Test", function() { return /* reexport */ Test; });
 
 // CONCATENATED MODULE: /home/fpfings/.config/yarn/global/node_modules/@vue/cli-service/lib/commands/build/setPublicPath.js
 // This file is imported into lib/wc client bundles.
@@ -2442,16 +2443,8 @@ function signPoly(value) {
 var sign = Math.sign || signPoly;
 function normalizeChildren(context) {
   var slotProps = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-  if (context.$slots["default"]) {
-    return context.$slots["default"](slotProps) || [];
-  }
-
-  return context.$slots["default"] || [];
+  return context.$slots["default"]() || [];
 }
-// EXTERNAL MODULE: external {"commonjs":"vue","commonjs2":"vue","amd":"vue","root":"_"}
-var external_commonjs_vue_commonjs2_vue_amd_vue_root_ = __webpack_require__("8bbf");
-
 // EXTERNAL MODULE: ./src/styles/carousel.css
 var carousel = __webpack_require__("9e47");
 
@@ -2470,14 +2463,14 @@ var carousel = __webpack_require__("9e47");
 
 
 /* eslint-disable */
-
+ //import { h, nextTick } from 'vue'
 
  //let EMITTER = createApp({});
 
 /* harmony default export */ var Carousel = ({
   install: function install(app, options) {
-    //const h = options.h
-    //const nextTick = options.nextTick
+    var h = options.h;
+    var nextTick = options.nextTick;
     app.component('Hooper', {
       provide: function provide() {
         return {
@@ -2843,7 +2836,7 @@ var carousel = __webpack_require__("9e47");
         restartTimer: function restartTimer() {
           var _this4 = this;
 
-          Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["nextTick"])(function () {
+          nextTick(function () {
             if (_this4.timer === null && _this4.$props.autoPlay) {
               _this4.initAutoPlay();
 
@@ -2864,7 +2857,7 @@ var carousel = __webpack_require__("9e47");
         restart: function restart() {
           var _this5 = this;
 
-          Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["nextTick"])(function () {
+          nextTick(function () {
             _this5.update();
           });
         },
@@ -3032,7 +3025,7 @@ var carousel = __webpack_require__("9e47");
 
         this.initEvents();
         this.addGroupListeners();
-        Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["nextTick"])(function () {
+        nextTick(function () {
           _this7.update();
 
           _this7.slideTo(_this7.config.initialSlide || 0);
@@ -3057,8 +3050,8 @@ var carousel = __webpack_require__("9e47");
       render: function render() {
         var _this8 = this;
 
-        var body = renderBody.call(this, external_commonjs_vue_commonjs2_vue_amd_vue_root_["h"]);
-        var rendered = Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["h"])('section', {
+        var body = renderBody.call(this, h);
+        var rendered = h('section', {
           "class": {
             hooper: true,
             'is-vertical': this.config.vertical,
@@ -3125,7 +3118,19 @@ function renderSlides(h) {
   var slides = [];
 
   for (var i = 0; i < childrenCount; i++) {
-    var child = children[i]; // give slide an index behind the scenes
+    var child = children[i];
+
+    if (child.children.length > 0) {
+      for (var j = 0; j < child.children.length; j++) {
+        var nestedChild = child.children[j];
+
+        if (_typeof(nestedChild.type) === "object") {
+          nestedChild.key = idx;
+          slides.push(nestedChild);
+        }
+      }
+    } // give slide an index behind the scenes
+
 
     if (_typeof(child.type) === "object") {
       child.key = idx;
@@ -3173,6 +3178,9 @@ function renderBody(h) {
   }, children);
   return rendered;
 }
+// EXTERNAL MODULE: external {"commonjs":"vue","commonjs2":"vue","amd":"vue","root":"_"}
+var external_commonjs_vue_commonjs2_vue_amd_vue_root_ = __webpack_require__("8bbf");
+
 // EXTERNAL MODULE: ./src/styles/slide.css
 var styles_slide = __webpack_require__("0041");
 
@@ -3183,8 +3191,8 @@ var styles_slide = __webpack_require__("0041");
 
 /* harmony default export */ var Slide = ({
   install: function install(app, options) {
-    console.log('app:', app, 'options:', options); //const h = options.h
-
+    console.log('app:', app, 'options:', options);
+    var h = options.h;
     app.component('HooperSlide', {
       inject: ['$hooper'],
       props: {
@@ -3244,7 +3252,7 @@ var styles_slide = __webpack_require__("0041");
           'is-current': this.isCurrent
         };
         var children = normalizeChildren(this);
-        return Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["h"])('li', {
+        return h('li', {
           "class": classes,
           style: this.style,
           'aria-hidden': !this.isActive
@@ -3516,7 +3524,19 @@ function renderButton(h, disabled, slot, isPrev, _ref, onClick) {
     }, children);
   }
 });
+// CONCATENATED MODULE: ./src/Test.js
+
+/* harmony default export */ var Test = ({
+  install: function install(app, options) {
+    app.component('Test', {
+      render: function render() {
+        return Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["h"])('div', 'test');
+      }
+    });
+  }
+});
 // CONCATENATED MODULE: ./src/index.js
+
 
 
 

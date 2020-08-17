@@ -1,11 +1,13 @@
 /* eslint-disable */
 import { getInRange, now, Timer, normalizeSlideIndex, cloneNode, normalizeChildren, sign, assign } from './utils';
-import { h, nextTick } from 'vue'
+//import { h, nextTick } from 'vue'
 import './styles/carousel.css';
 
 //let EMITTER = createApp({});
 export default {
   install: (app, options) => {
+    const h = options.h
+    const nextTick = options.nextTick
     app.component('Hooper', {
       provide() {
         return {
@@ -580,9 +582,19 @@ function renderSlides(h) {
   const childrenCount = children.length;
   let idx = 0;
   let slides = [];
+
+
   for (let i = 0; i < childrenCount; i++) {
     const child = children[i];
-
+    if (child.children.length > 0) {
+      for (let j = 0; j < child.children.length; j++) {
+        const nestedChild = child.children[j];
+        if (typeof nestedChild.type === "object") {
+          nestedChild.key = idx;
+          slides.push(nestedChild);
+        }
+      }
+    }
 
     // give slide an index behind the scenes
     if (typeof child.type === "object") {

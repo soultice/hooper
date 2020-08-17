@@ -5,7 +5,7 @@ import './styles/slide.css';
 export default {
   install: (app, options) => {
     console.log('app:', app, 'options:', options);
-    //const h = options.h
+    const h = options.h
     app.component('HooperSlide', {
       inject: ['$hooper'],
       props: {

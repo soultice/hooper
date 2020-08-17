@@ -92,9 +92,6 @@ function signPoly(value) {
 export const sign = Math.sign || signPoly;
 
 export function normalizeChildren(context, slotProps = {}) {
-  if (context.$slots.default) {
-    return context.$slots.default(slotProps) || [];
-  }
 
-  return context.$slots.default || [];
+  return context.$slots.default() || [];
 }
