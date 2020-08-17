@@ -52,14 +52,6 @@ export function normalizeSlideIndex(index, slidesCount) {
   return realIndex;
 }
 
-export function cloneNode(h, vNode) {
-  // use the context that the original vnode was created in.
-  const children = vNode.children || vNode.componentOptions.children || vNode.text;
-  const tag = vNode.componentOptions.Ctor;
-
-  return h(tag, vNode.data, children);
-}
-
 // IE11 :)
 function assignPoly(target) {
   if (target === undefined || target === null) {
@@ -100,8 +92,8 @@ function signPoly(value) {
 export const sign = Math.sign || signPoly;
 
 export function normalizeChildren(context, slotProps = {}) {
-  if (context.$scopedSlots.default) {
-    return context.$scopedSlots.default(slotProps) || [];
+  if (context.$slots.default) {
+    return context.$slots.default(slotProps) || [];
   }
 
   return context.$slots.default || [];
