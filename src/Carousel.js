@@ -618,7 +618,8 @@ function renderSlides(h) {
       },
       style: this.trackTransform + this.trackTransition,
       ref: 'track',
-      onTransitionEnd: this.onTransitionend
+      onTransitionend: this.onTransitionend,
+      onTransitioncancel: this.onTransitionend
     },
     slides
   );
