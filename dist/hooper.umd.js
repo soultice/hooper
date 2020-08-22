@@ -3263,16 +3263,12 @@ function renderSlides(h) {
         var nestedChild = child.children[j];
 
         if (_typeof(nestedChild.type) === 'object') {
-          nestedChild.key = idx;
-          nestedChild.props.index = idx;
           slides.push(nestedChild);
         }
       }
-    } // give slide an index behind the scenes
-
+    }
 
     if (_typeof(child.type) === 'object') {
-      child.key = idx;
       slides.push(child);
     }
   } // update hooper's information of the slide count.

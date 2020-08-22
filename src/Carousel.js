@@ -591,17 +591,12 @@ function renderSlides(h) {
       for (let j = 0; j < child.children.length; j++) {
         const nestedChild = child.children[j];
         if (typeof nestedChild.type === 'object') {
-          nestedChild.key = idx;
-          nestedChild.props.index = idx
           slides.push(nestedChild);
         }
       }
     }
 
-    // give slide an index behind the scenes
     if (typeof child.type === 'object') {
-      child.key = idx;
-      child.props.index = idx
       slides.push(child);
     }
   }
