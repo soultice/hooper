@@ -601,6 +601,7 @@ function renderSlides(h) {
     // give slide an index behind the scenes
     if (typeof child.type === 'object') {
       child.key = idx;
+      child.props.index = idx
       slides.push(child);
     }
   }
