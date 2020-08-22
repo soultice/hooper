@@ -7,7 +7,7 @@
   "main": "dist/hooper.umd.js",
   "scripts": {
     "lint": "eslint ./src --fix",
-    "build": "NODE_ENV=production node scripts/build",
+    "build": "vue  build --target lib --name hooper -d ./dist/ ./src/index.js",
     "deploy": "bash scripts/deploy.sh",
     "dev": "node scripts/watcher",
     "docs:dev": "vuepress dev docs",
