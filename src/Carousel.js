@@ -223,6 +223,9 @@ export default {
           window.setTimeout(() => {
             this.isSliding = false;
             this.currentSlide = normalizeSlideIndex(index, this.slidesCount);
+            this.$emit('afterSlide', {
+              currentSlide: this.currentSlide
+            });
           }, transition);
 
           this.$emit('slide', {
@@ -431,12 +434,6 @@ export default {
           document.removeEventListener(this.isTouch ? 'touchend' : 'mouseup', this.onDragEnd);
           this.restartTimer();
         },
-        onTransitionend() {
-          this.isSliding = false;
-          this.$emit('afterSlide', {
-            currentSlide: this.currentSlide
-          });
-        },
         onKeypress(event) {
           const key = event.key;
           if (key.startsWith('Arrow')) {
@@ -618,8 +615,6 @@ function renderSlides(h) {
       },
       style: this.trackTransform + this.trackTransition,
       ref: 'track',
-      onTransitionend: this.onTransitionend,
-      onTransitioncancel: this.onTransitionend
     },
     slides
   );
