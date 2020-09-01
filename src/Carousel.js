@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Obs, getInRange, now, Timer, normalizeSlideIndex, cloneNode, normalizeChildren, sign, assign } from './utils';
-import { h, nextTick } from 'vue'
+import { h, nextTick } from 'vue';
 
 import './styles/carousel.css';
 
@@ -182,7 +182,7 @@ export default {
       }
 
       if (window.hooper) {
-         window.hooper.unsubscribe(`slideGroup:${oldVal}`, this._groupSlideHandler, this);
+        window.hooper.unsubscribe(`slideGroup:${oldVal}`, this._groupSlideHandler, this);
       }
       this.addGroupListeners();
     },
@@ -222,6 +222,9 @@ export default {
       window.setTimeout(() => {
         this.isSliding = false;
         this.currentSlide = normalizeSlideIndex(index, this.slidesCount);
+        this.$emit('afterSlide', {
+          currentSlide: this.currentSlide
+        });
       }, transition);
 
       this.$emit('slide', {
@@ -430,12 +433,6 @@ export default {
       document.removeEventListener(this.isTouch ? 'touchend' : 'mouseup', this.onDragEnd);
       this.restartTimer();
     },
-    onTransitionend() {
-      this.isSliding = false;
-      this.$emit('afterSlide', {
-        currentSlide: this.currentSlide
-      });
-    },
     onKeypress(event) {
       const key = event.key;
       if (key.startsWith('Arrow')) {
@@ -615,9 +612,7 @@ function renderSlides(h) {
         'is-dragging': this.isDragging
       },
       style: this.trackTransform + this.trackTransition,
-      ref: 'track',
-      onTransitionend: this.onTransitionend,
-      onTransitioncancel: this.onTransitionend
+      ref: 'track'
     },
     slides
   );
