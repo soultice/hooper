@@ -7,24 +7,24 @@ export function now() {
 }
 
 export function Timer(callback, defaultTime) {
-  this.create = function() {
+  this.create = function () {
     return window.setTimeout(callback, defaultTime);
   };
 
-  this.stop = function() {
+  this.stop = function () {
     if (this.timer) {
       window.clearTimeout(this.timer);
       this.timer = null;
     }
   };
 
-  this.start = function() {
+  this.start = function () {
     if (!this.timer) {
       this.timer = this.create();
     }
   };
 
-  this.set = function(newTime) {
+  this.set = function (newTime) {
     const timeout = newTime || defaultTime;
     this.timer = window.setTimeout(callback, timeout);
   };
@@ -92,6 +92,43 @@ function signPoly(value) {
 export const sign = Math.sign || signPoly;
 
 export function normalizeChildren(context, slotProps = {}) {
-
   return context.$slots.default() || [];
 }
+
+function Observable() {
+  this.handlers = {}; // observers
+}
+
+Observable.prototype = {
+  subscribe: function (target, fn, scope) {
+    if (!this.handlers[target]) {
+      this.handlers[target] = [];
+    }
+    this.handlers[target].push({
+      function: fn,
+      scope: scope
+    });
+    console.log('subscribed', this.handlers);
+  },
+
+  unsubscribe: function (target, fn, scope) {
+    this.handlers[target] = this.handlers[target].filter(subscriber => {
+      if (subscriber.scope !== scope && subscriber.function !== fn) {
+        return subscriber;
+      }
+    });
+    console.log('handlers', this.handlers);
+  },
+
+  fire: function (target, props, thisObj) {
+    console.log('fired: ', target, props);
+    var scope = thisObj || window;
+    if (this.handlers[target]) {
+      this.handlers[target].forEach(function (subscriber) {
+        subscriber.function.call(scope, props);
+      });
+    }
+  }
+};
+
+export const Obs = new Observable();
