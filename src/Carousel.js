@@ -329,7 +329,7 @@ export default {
         this.slideHeight = this.containerHeight / this.config.itemsToShow;
         return;
       }
-      this.slideWidth = this.containerWidth / this.config.itemsToShow;
+      this.slideWidth = Math.ceil(this.containerWidth / this.config.itemsToShow);
     },
     updateConfig() {
       const breakpoints = Object.keys(this.breakpoints).sort((a, b) => b - a);

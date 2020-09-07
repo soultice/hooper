@@ -2947,7 +2947,7 @@ var carousel = __webpack_require__("9e47");
         return;
       }
 
-      this.slideWidth = this.containerWidth / this.config.itemsToShow;
+      this.slideWidth = Math.ceil(this.containerWidth / this.config.itemsToShow);
     },
     updateConfig: function updateConfig() {
       var _this3 = this;
