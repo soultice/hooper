@@ -301,7 +301,8 @@ export default {
       if (this.breakpoints) {
         this.updateConfig();
       }
-      this.updateWidth();
+      this.updateDimensions();
+      this.updateSlideDimensions();
       this.updateTrim();
       this.$emit('updated', {
         containerWidth: this.containerWidth,
@@ -321,15 +322,27 @@ export default {
       this.trimStart = centerMode ? Math.floor((itemsToShow - 1) / 2) : 0;
       this.trimEnd = centerMode ? Math.ceil(itemsToShow / 2) : itemsToShow;
     },
-    updateWidth() {
-      const rect = this.$el.getBoundingClientRect();
-      this.containerWidth = rect.width;
-      this.containerHeight = rect.height;
+    updateDimensions() {
+      const { width, height } = this.$el.getBoundingClientRect();
+      if (this.itemsToShow === 1) {
+        this.containerWidth = width;
+        this.containerHeight = height;
+      } else {
+        if (this.config.vertical) {
+          this.containerHeight = height - (height % this.config.itemsToShow);
+          this.containerWidth = width;
+        } else {
+          this.containerHeight = height;
+          this.containerWidth = width - (width % this.config.itemsToShow);
+        }
+      }
+    },
+    updateSlideDimensions() {
       if (this.config.vertical) {
         this.slideHeight = this.containerHeight / this.config.itemsToShow;
-        return;
+      } else {
+        this.slideWidth = this.containerWidth / this.config.itemsToShow;
       }
-      this.slideWidth = Math.ceil(this.containerWidth / this.config.itemsToShow);
     },
     updateConfig() {
       const breakpoints = Object.keys(this.breakpoints).sort((a, b) => b - a);
@@ -643,6 +656,7 @@ function renderBody(h) {
     'div',
     {
       class: 'hooper-list',
+      style: this.config.vertical ? `height: ${this.containerHeight}px` : `width: ${this.containerWidth}px`,
       ref: 'list'
     },
     children
