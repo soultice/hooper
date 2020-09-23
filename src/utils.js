@@ -108,7 +108,6 @@ Observable.prototype = {
       function: fn,
       scope: scope
     });
-    console.log('subscribed', this.handlers);
   },
 
   unsubscribe: function (target, fn, scope) {
@@ -117,11 +116,9 @@ Observable.prototype = {
         return subscriber;
       }
     });
-    console.log('handlers', this.handlers);
   },
 
   fire: function (target, props, thisObj) {
-    console.log('fired: ', target, props);
     var scope = thisObj || window;
     if (this.handlers[target]) {
       this.handlers[target].forEach(function (subscriber) {
