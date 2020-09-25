@@ -2781,40 +2781,41 @@ var carousel = __webpack_require__("9e47");
     },
     initEvents: function initEvents() {
       // get the element direction if not explicitly set
+      this.$refs.list.removeEventListener('mousedown', this.onDragStart);
+      this.$refs.list.removeEventListener('touchstart', this.onDragStart, {
+        passive: true
+      });
+      this.$el.removeEventListener('keydown', this.onKeypress);
+      this.$el.removeEventListener('wheel', this.onWheel, {
+        passive: false
+      });
+      window.removeEventListener('resize', this.update);
+
       if (this.$props.autoPlay) {
         this.initAutoPlay();
       }
 
       if (this.mouseDrag) {
-        this.$refs.list.removeEventListener('mousedown', this.onDragStart);
         this.$refs.list.addEventListener('mousedown', this.onDragStart);
       }
 
       if (this.touchDrag) {
-        this.$refs.list.removeEventListener('touchstart', this.onDragStart, {
-          passive: true
-        });
         this.$refs.list.addEventListener('touchstart', this.onDragStart, {
           passive: true
         });
       }
 
       if (this.keysControl) {
-        this.$el.removeEventListener('keydown', this.onKeypress);
         this.$el.addEventListener('keydown', this.onKeypress);
       }
 
       if (this.wheelControl) {
         this.lastScrollTime = now();
-        this.$el.removeEventListener('wheel', this.onWheel, {
-          passive: false
-        });
         this.$el.addEventListener('wheel', this.onWheel, {
           passive: false
         });
       }
 
-      window.removeEventListener('resize', this.update);
       window.addEventListener('resize', this.update);
     },
     getCurrentSlideTimeout: function getCurrentSlideTimeout() {
@@ -2847,7 +2848,7 @@ var carousel = __webpack_require__("9e47");
       }, this.getCurrentSlideTimeout());
     },
     updated: function updated() {
-      this.initEvents(); //this.update()
+      this.initEvents();
     },
     // updating methods
     update: function update() {
