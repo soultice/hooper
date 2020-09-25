@@ -21,8 +21,8 @@ export default {
   },
   computed: {
     style() {
-      const { config, slideHeight, slideWidth } = this.$hooper || {};
-      if (config.vertical) {
+      const { vertical, slideHeight, slideWidth } = this.$hooper || {};
+      if (vertical) {
         return `height: ${slideHeight}px`;
       }
 
@@ -35,13 +35,13 @@ export default {
     },
     isPrev() {
       const { lower } = this.$hooper.slideBounds;
-      const { itemsToSlide } = this.$hooper.config;
+      const { itemsToSlide } = this.$hooper;
 
       return this.index < lower && this.index >= lower - itemsToSlide;
     },
     isNext() {
       const { upper } = this.$hooper.slideBounds;
-      const { itemsToSlide } = this.$hooper.config;
+      const { itemsToSlide } = this.$hooper;
 
       return this.index > upper && this.index <= upper + itemsToSlide;
     },

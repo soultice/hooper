@@ -573,6 +573,46 @@ module.exports = function (it) {
 
 /***/ }),
 
+/***/ "444e":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__("61d8");
+var aFunction = __webpack_require__("4387");
+var toObject = __webpack_require__("d9ac");
+var fails = __webpack_require__("5fac");
+var arrayMethodIsStrict = __webpack_require__("206e");
+
+var test = [];
+var nativeSort = test.sort;
+
+// IE8-
+var FAILS_ON_UNDEFINED = fails(function () {
+  test.sort(undefined);
+});
+// V8 bug
+var FAILS_ON_NULL = fails(function () {
+  test.sort(null);
+});
+// Old WebKit
+var STRICT_METHOD = arrayMethodIsStrict('sort');
+
+var FORCED = FAILS_ON_UNDEFINED || !FAILS_ON_NULL || !STRICT_METHOD;
+
+// `Array.prototype.sort` method
+// https://tc39.github.io/ecma262/#sec-array.prototype.sort
+$({ target: 'Array', proto: true, forced: FORCED }, {
+  sort: function sort(comparefn) {
+    return comparefn === undefined
+      ? nativeSort.call(toObject(this))
+      : nativeSort.call(toObject(this), aFunction(comparefn));
+  }
+});
+
+
+/***/ }),
+
 /***/ "44d8":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2212,8 +2252,17 @@ if (typeof window !== 'undefined') {
 // EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.array.concat.js
 var es_array_concat = __webpack_require__("c3fe");
 
+// EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.array.for-each.js
+var es_array_for_each = __webpack_require__("9d62");
+
+// EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.array.sort.js
+var es_array_sort = __webpack_require__("444e");
+
 // EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.number.constructor.js
 var es_number_constructor = __webpack_require__("22f4");
+
+// EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.object.keys.js
+var es_object_keys = __webpack_require__("abad");
 
 // EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.string.starts-with.js
 var es_string_starts_with = __webpack_require__("f129");
@@ -2223,6 +2272,9 @@ var es_string_trim_end = __webpack_require__("7c5e");
 
 // EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.string.trim-start.js
 var es_string_trim_start = __webpack_require__("f291");
+
+// EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/web.dom-collections.for-each.js
+var web_dom_collections_for_each = __webpack_require__("5ff8");
 
 // EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/web.timers.js
 var web_timers = __webpack_require__("b7a3");
@@ -2338,9 +2390,6 @@ function _objectSpread2(target) {
 // EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.array.filter.js
 var es_array_filter = __webpack_require__("eae4");
 
-// EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.array.for-each.js
-var es_array_for_each = __webpack_require__("9d62");
-
 // EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.array.slice.js
 var es_array_slice = __webpack_require__("5ea2");
 
@@ -2359,17 +2408,11 @@ var es_object_assign = __webpack_require__("2c5b");
 // EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.object.get-own-property-descriptor.js
 var es_object_get_own_property_descriptor = __webpack_require__("d4e0");
 
-// EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.object.keys.js
-var es_object_keys = __webpack_require__("abad");
-
 // EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.regexp.exec.js
 var es_regexp_exec = __webpack_require__("1c25");
 
 // EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/es.string.replace.js
 var es_string_replace = __webpack_require__("b6cf");
-
-// EXTERNAL MODULE: /home/fpfings/.config/yarn/global/node_modules/core-js/modules/web.dom-collections.for-each.js
-var web_dom_collections_for_each = __webpack_require__("5ff8");
 
 // CONCATENATED MODULE: ./src/utils.js
 
@@ -2533,6 +2576,10 @@ var carousel = __webpack_require__("9e47");
 
 
 
+
+
+
+
 /* eslint-disable */
 
 
@@ -2634,6 +2681,10 @@ var carousel = __webpack_require__("9e47");
     group: {
       type: String,
       "default": null
+    },
+    breakpoints: {
+      type: Object,
+      "default": {}
     }
   },
   data: function data() {
@@ -2653,23 +2704,20 @@ var carousel = __webpack_require__("9e47");
       trimEnd: 1,
       currentSlide: null,
       timer: null,
-      defaults: {},
       delta: {
         x: 0,
         y: 0
-      },
-      config: {}
+      }
     };
   },
   computed: {
     slideBounds: function slideBounds() {
-      var config = this.config,
-          currentSlide = this.currentSlide; // Because the "isActive" depends on the slides shown, not the number of slidable ones.
+      var currentSlide = this.currentSlide; // Because the "isActive" depends on the slides shown, not the number of slidable ones.
       // but upper and lower bounds for Next,Prev depend on whatever is smaller.
 
-      var siblings = config.itemsToShow;
-      var lower = config.centerMode ? Math.ceil(currentSlide - siblings / 2) : currentSlide;
-      var upper = config.centerMode ? Math.floor(currentSlide + siblings / 2) : Math.floor(currentSlide + siblings - 1);
+      var siblings = this.itemsToShow;
+      var lower = this.centerMode ? Math.ceil(currentSlide - siblings / 2) : currentSlide;
+      var upper = this.centerMode ? Math.floor(currentSlide + siblings / 2) : Math.floor(currentSlide + siblings - 1);
       return {
         lower: lower,
         upper: upper
@@ -2702,6 +2750,26 @@ var carousel = __webpack_require__("9e47");
       }
 
       return '';
+    },
+    computedBreakpoints: function computedBreakpoints() {
+      var _this = this;
+
+      if (this.breakpoints) {
+        var breakpoints = Object.keys(this.breakpoints).sort(function (a, b) {
+          return b - a;
+        });
+        var fp = undefined;
+        breakpoints.forEach(function (bp) {
+          matched = window.matchMedia("(min-width: ".concat(bp, "px)")).matches;
+
+          if (matched) {
+            fp = _this.breakpoints[bp];
+          }
+        });
+        return fp;
+      }
+
+      return undefined;
     }
   },
   watch: {
@@ -2727,7 +2795,7 @@ var carousel = __webpack_require__("9e47");
   methods: {
     // controlling methods
     slideTo: function slideTo(slideIndex) {
-      var _this = this;
+      var _this2 = this;
 
       var isSource = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
@@ -2752,11 +2820,11 @@ var carousel = __webpack_require__("9e47");
       this.currentSlide = index;
       this.isSliding = true;
       window.setTimeout(function () {
-        _this.isSliding = false;
-        _this.currentSlide = normalizeSlideIndex(index, _this.slidesCount);
+        _this2.isSliding = false;
+        _this2.currentSlide = normalizeSlideIndex(index, _this2.slidesCount);
 
-        _this.$emit('afterSlide', {
-          currentSlide: _this.currentSlide
+        _this2.$emit('afterSlide', {
+          currentSlide: _this2.currentSlide
         });
       }, transition);
       this.$emit('slide', {
@@ -2816,26 +2884,26 @@ var carousel = __webpack_require__("9e47");
     },
     // switched to using a timeout which defaults to the prop set on this component, but can be overridden on a per slide basis.
     initAutoPlay: function initAutoPlay() {
-      var _this2 = this;
+      var _this3 = this;
 
       this.timer = new Timer(function () {
-        if (_this2.isSliding || _this2.isDragging || _this2.isHover && _this2.hoverPause || _this2.isFocus || !_this2.$props.autoPlay) {
-          _this2.timer.set(_this2.getCurrentSlideTimeout());
+        if (_this3.isSliding || _this3.isDragging || _this3.isHover && _this3.hoverPause || _this3.isFocus || !_this3.$props.autoPlay) {
+          _this3.timer.set(_this3.getCurrentSlideTimeout());
 
           return;
         }
 
-        if (_this2.currentSlide === _this2.slidesCount - 1 && !_this2.infiniteScroll) {
-          _this2.slideTo(0);
+        if (_this3.currentSlide === _this3.slidesCount - 1 && !_this3.infiniteScroll) {
+          _this3.slideTo(0);
 
-          _this2.timer.set(_this2.getCurrentSlideTimeout());
+          _this3.timer.set(_this3.getCurrentSlideTimeout());
 
           return;
         }
 
-        _this2.slideNext();
+        _this3.slideNext();
 
-        _this2.timer.set(_this2.getCurrentSlideTimeout());
+        _this3.timer.set(_this3.getCurrentSlideTimeout());
       }, this.getCurrentSlideTimeout());
     },
     updated: function updated() {
@@ -2896,31 +2964,31 @@ var carousel = __webpack_require__("9e47");
       }
     },
     restartTimer: function restartTimer() {
-      var _this3 = this;
+      var _this4 = this;
 
       Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["nextTick"])(function () {
-        if (_this3.timer === null && _this3.$props.autoPlay) {
-          _this3.initAutoPlay();
+        if (_this4.timer === null && _this4.$props.autoPlay) {
+          _this4.initAutoPlay();
 
           return;
         }
 
-        if (_this3.timer) {
-          _this3.timer.stop();
+        if (_this4.timer) {
+          _this4.timer.stop();
 
-          if (_this3.$props.autoPlay) {
-            _this3.timer.set(_this3.getCurrentSlideTimeout());
+          if (_this4.$props.autoPlay) {
+            _this4.timer.set(_this4.getCurrentSlideTimeout());
 
-            _this3.timer.start();
+            _this4.timer.start();
           }
         }
       });
     },
     restart: function restart() {
-      var _this4 = this;
+      var _this5 = this;
 
       Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["nextTick"])(function () {
-        _this4.update();
+        _this5.update();
       });
     },
     // events handlers
@@ -3060,7 +3128,7 @@ var carousel = __webpack_require__("9e47");
       }
     },
     addGroupListeners: function addGroupListeners() {
-      var _this5 = this;
+      var _this6 = this;
 
       if (!this.group) {
         return;
@@ -3068,7 +3136,7 @@ var carousel = __webpack_require__("9e47");
 
       this._groupSlideHandler = function (slideIndex) {
         // set the isSource to false to prevent infinite emitting loop.
-        _this5.slideTo(slideIndex, false);
+        _this6.slideTo(slideIndex, false);
       };
 
       window.hooper.subscribe("slideGroup:".concat(this.group), this._groupSlideHandler, this); // ,
@@ -3080,20 +3148,20 @@ var carousel = __webpack_require__("9e47");
     }
   },
   mounted: function mounted() {
-    var _this6 = this;
+    var _this7 = this;
 
     this.initEvents();
     this.addGroupListeners();
     Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["nextTick"])(function () {
-      _this6.update();
+      _this7.update();
 
-      _this6.slideTo(_this6.initialSlide || 0);
+      _this7.slideTo(_this7.initialSlide || 0);
 
       setTimeout(function () {
-        _this6.$emit('loaded');
+        _this7.$emit('loaded');
 
-        _this6.initialized = true;
-      }, _this6.transition);
+        _this7.initialized = true;
+      }, _this7.transition);
     });
   },
   beforeUnmount: function beforeUnmount() {
@@ -3110,7 +3178,7 @@ var carousel = __webpack_require__("9e47");
     }
   },
   render: function render() {
-    var _this7 = this;
+    var _this8 = this;
 
     var body = renderBody.call(this, external_commonjs_vue_commonjs2_vue_amd_vue_root_["h"]);
     var rendered = Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["h"])('section', {
@@ -3121,16 +3189,16 @@ var carousel = __webpack_require__("9e47");
       },
       tabindex: '0',
       onFocusIn: function onFocusIn() {
-        return _this7.isFocus = true;
+        return _this8.isFocus = true;
       },
       onFocusOut: function onFocusOut() {
-        return _this7.isFocus = false;
+        return _this8.isFocus = false;
       },
       onMouseOver: function onMouseOver() {
-        return _this7.isHover = true;
+        return _this8.isHover = true;
       },
       onMouseLeave: function onMouseLeave() {
-        return _this7.isHover = false;
+        return _this8.isHover = false;
       }
     }, body);
     return rendered;
@@ -3263,11 +3331,11 @@ var styles_slide = __webpack_require__("0041");
   computed: {
     style: function style() {
       var _ref = this.$hooper || {},
-          config = _ref.config,
+          vertical = _ref.vertical,
           slideHeight = _ref.slideHeight,
           slideWidth = _ref.slideWidth;
 
-      if (config.vertical) {
+      if (vertical) {
         return "height: ".concat(slideHeight, "px");
       }
 
@@ -3281,12 +3349,12 @@ var styles_slide = __webpack_require__("0041");
     },
     isPrev: function isPrev() {
       var lower = this.$hooper.slideBounds.lower;
-      var itemsToSlide = this.$hooper.config.itemsToSlide;
+      var itemsToSlide = this.$hooper.itemsToSlide;
       return this.index < lower && this.index >= lower - itemsToSlide;
     },
     isNext: function isNext() {
       var upper = this.$hooper.slideBounds.upper;
-      var itemsToSlide = this.$hooper.config.itemsToSlide;
+      var itemsToSlide = this.$hooper.itemsToSlide;
       return this.index > upper && this.index <= upper + itemsToSlide;
     },
     isCurrent: function isCurrent() {

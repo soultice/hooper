@@ -101,6 +101,10 @@ export default {
     group: {
       type: String,
       default: null
+    },
+    breakpoints: {
+      type: Object,
+      default: {}
     }
   },
   data() {
@@ -120,19 +124,17 @@ export default {
       trimEnd: 1,
       currentSlide: null,
       timer: null,
-      defaults: {},
       delta: { x: 0, y: 0 },
-      config: {}
     };
   },
   computed: {
     slideBounds() {
-      const { config, currentSlide } = this;
+      const { currentSlide } = this;
       // Because the "isActive" depends on the slides shown, not the number of slidable ones.
       // but upper and lower bounds for Next,Prev depend on whatever is smaller.
-      const siblings = config.itemsToShow;
-      const lower = config.centerMode ? Math.ceil(currentSlide - siblings / 2) : currentSlide;
-      const upper = config.centerMode
+      const siblings = this.itemsToShow;
+      const lower = this.centerMode ? Math.ceil(currentSlide - siblings / 2) : currentSlide;
+      const upper = this.centerMode
         ? Math.floor(currentSlide + siblings / 2)
         : Math.floor(currentSlide + siblings - 1);
 
@@ -166,6 +168,20 @@ export default {
       }
 
       return '';
+    },
+    computedBreakpoints() {
+      if (this.breakpoints) {
+        const breakpoints = Object.keys(this.breakpoints).sort((a, b) => b - a);
+        var currentBreakpoint = undefined;
+        breakpoints.forEach((bp) => {
+          matched = window.matchMedia(`(min-width: ${bp}px)`).matches;
+          if (matched) {
+            currentBreakpoint = this.breakpoints[bp]
+          }
+        })
+        return currentBreakpoint
+      }
+      return undefined;
     }
   },
   watch: {
@@ -253,7 +269,7 @@ export default {
       if (this.touchDrag) {
         this.$refs.list.addEventListener('touchstart', this.onDragStart, {
           passive: true
-        }) 
+        });
       }
       if (this.keysControl) {
         this.$el.addEventListener('keydown', this.onKeypress);
@@ -291,7 +307,7 @@ export default {
       }, this.getCurrentSlideTimeout());
     },
     updated() {
-      this.initEvents()
+      this.initEvents();
     },
     // updating methods
     update() {
