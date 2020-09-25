@@ -44,7 +44,7 @@ export default {
     },
     // enable rtl mode
     rtl: {
-      default: null,
+      default: false,
       type: Boolean
     },
     // enable auto sliding to carousel
@@ -98,12 +98,6 @@ export default {
       type: Boolean
     },
     // an object to pass all settings
-    settings: {
-      default() {
-        return {};
-      },
-      type: Object
-    },
     group: {
       type: String,
       default: null
@@ -127,7 +121,6 @@ export default {
       currentSlide: null,
       timer: null,
       defaults: {},
-      breakpoints: {},
       delta: { x: 0, y: 0 },
       config: {}
     };
@@ -241,28 +234,32 @@ export default {
 
     initEvents() {
       // get the element direction if not explicitly set
-      if (this.defaults.rtl === null) {
-        this.defaults.rtl = getComputedStyle(this.$el).direction === 'rtl';
-      }
 
       if (this.$props.autoPlay) {
         this.initAutoPlay();
       }
       if (this.mouseDrag) {
+        this.$refs.list.removeEventListener('mousedown', this.onDragStart);
         this.$refs.list.addEventListener('mousedown', this.onDragStart);
       }
       if (this.touchDrag) {
+        this.$refs.list.removeEventListener('touchstart', this.onDragStart, {
+          passive: true
+        });
         this.$refs.list.addEventListener('touchstart', this.onDragStart, {
           passive: true
         });
       }
       if (this.keysControl) {
+        this.$el.removeEventListener('keydown', this.onKeypress);
         this.$el.addEventListener('keydown', this.onKeypress);
       }
       if (this.wheelControl) {
         this.lastScrollTime = now();
+        this.$el.removeEventListener('wheel', this.onWheel, { passive: false });
         this.$el.addEventListener('wheel', this.onWheel, { passive: false });
       }
+      window.removeEventListener('resize', this.update);
       window.addEventListener('resize', this.update);
     },
     getCurrentSlideTimeout() {
@@ -291,8 +288,9 @@ export default {
         this.timer.set(this.getCurrentSlideTimeout());
       }, this.getCurrentSlideTimeout());
     },
-    initDefaults() {
-      this.breakpoints = this.settings.breakpoints;
+    updated() {
+      this.initEvents()
+      //this.update()
     },
     // updating methods
     update() {
@@ -489,7 +487,6 @@ export default {
     if (!window.hooper) {
       window.hooper = Obs;
     }
-    this.initDefaults();
   },
   mounted() {
     this.initEvents();

@@ -2577,7 +2577,7 @@ var carousel = __webpack_require__("9e47");
     },
     // enable rtl mode
     rtl: {
-      "default": null,
+      "default": false,
       type: Boolean
     },
     // enable auto sliding to carousel
@@ -2631,12 +2631,6 @@ var carousel = __webpack_require__("9e47");
       type: Boolean
     },
     // an object to pass all settings
-    settings: {
-      "default": function _default() {
-        return {};
-      },
-      type: Object
-    },
     group: {
       type: String,
       "default": null
@@ -2660,7 +2654,6 @@ var carousel = __webpack_require__("9e47");
       currentSlide: null,
       timer: null,
       defaults: {},
-      breakpoints: {},
       delta: {
         x: 0,
         y: 0
@@ -2779,35 +2772,40 @@ var carousel = __webpack_require__("9e47");
     },
     initEvents: function initEvents() {
       // get the element direction if not explicitly set
-      if (this.defaults.rtl === null) {
-        this.defaults.rtl = getComputedStyle(this.$el).direction === 'rtl';
-      }
-
       if (this.$props.autoPlay) {
         this.initAutoPlay();
       }
 
       if (this.mouseDrag) {
+        this.$refs.list.removeEventListener('mousedown', this.onDragStart);
         this.$refs.list.addEventListener('mousedown', this.onDragStart);
       }
 
       if (this.touchDrag) {
+        this.$refs.list.removeEventListener('touchstart', this.onDragStart, {
+          passive: true
+        });
         this.$refs.list.addEventListener('touchstart', this.onDragStart, {
           passive: true
         });
       }
 
       if (this.keysControl) {
+        this.$el.removeEventListener('keydown', this.onKeypress);
         this.$el.addEventListener('keydown', this.onKeypress);
       }
 
       if (this.wheelControl) {
         this.lastScrollTime = now();
+        this.$el.removeEventListener('wheel', this.onWheel, {
+          passive: false
+        });
         this.$el.addEventListener('wheel', this.onWheel, {
           passive: false
         });
       }
 
+      window.removeEventListener('resize', this.update);
       window.addEventListener('resize', this.update);
     },
     getCurrentSlideTimeout: function getCurrentSlideTimeout() {
@@ -2839,8 +2837,8 @@ var carousel = __webpack_require__("9e47");
         _this2.timer.set(_this2.getCurrentSlideTimeout());
       }, this.getCurrentSlideTimeout());
     },
-    initDefaults: function initDefaults() {
-      this.breakpoints = this.settings.breakpoints;
+    updated: function updated() {
+      this.initEvents(); //this.update()
     },
     // updating methods
     update: function update() {
@@ -3079,8 +3077,6 @@ var carousel = __webpack_require__("9e47");
     if (!window.hooper) {
       window.hooper = Obs;
     }
-
-    this.initDefaults();
   },
   mounted: function mounted() {
     var _this6 = this;
