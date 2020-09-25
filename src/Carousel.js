@@ -44,7 +44,7 @@ export default {
     },
     // enable rtl mode
     rtl: {
-      default: null,
+      default: false,
       type: Boolean
     },
     // enable auto sliding to carousel
@@ -98,15 +98,13 @@ export default {
       type: Boolean
     },
     // an object to pass all settings
-    settings: {
-      default() {
-        return {};
-      },
-      type: Object
-    },
     group: {
       type: String,
       default: null
+    },
+    breakpoints: {
+      type: Object,
+      default: {}
     }
   },
   data() {
@@ -126,20 +124,17 @@ export default {
       trimEnd: 1,
       currentSlide: null,
       timer: null,
-      defaults: {},
-      breakpoints: {},
       delta: { x: 0, y: 0 },
-      config: {}
     };
   },
   computed: {
     slideBounds() {
-      const { config, currentSlide } = this;
+      const { currentSlide } = this;
       // Because the "isActive" depends on the slides shown, not the number of slidable ones.
       // but upper and lower bounds for Next,Prev depend on whatever is smaller.
-      const siblings = config.itemsToShow;
-      const lower = config.centerMode ? Math.ceil(currentSlide - siblings / 2) : currentSlide;
-      const upper = config.centerMode
+      const siblings = this.itemsToShow;
+      const lower = this.centerMode ? Math.ceil(currentSlide - siblings / 2) : currentSlide;
+      const upper = this.centerMode
         ? Math.floor(currentSlide + siblings / 2)
         : Math.floor(currentSlide + siblings - 1);
 
@@ -149,7 +144,7 @@ export default {
       };
     },
     trackTransform() {
-      const { infiniteScroll, vertical, rtl, centerMode } = this.config;
+      const { infiniteScroll, vertical, rtl, centerMode } = this.$props;
 
       const direction = rtl ? -1 : 1;
       const slideLength = vertical ? this.slideHeight : this.slideWidth;
@@ -169,10 +164,24 @@ export default {
     },
     trackTransition() {
       if (this.initialized && this.isSliding) {
-        return `transition: ${this.config.transition}ms`;
+        return `transition: ${this.transition}ms`;
       }
 
       return '';
+    },
+    computedBreakpoints() {
+      if (this.breakpoints) {
+        const breakpoints = Object.keys(this.breakpoints).sort((a, b) => b - a);
+        var currentBreakpoint = undefined;
+        breakpoints.forEach((bp) => {
+          matched = window.matchMedia(`(min-width: ${bp}px)`).matches;
+          if (matched) {
+            currentBreakpoint = this.breakpoints[bp]
+          }
+        })
+        return currentBreakpoint
+      }
+      return undefined;
     }
   },
   watch: {
@@ -205,7 +214,7 @@ export default {
         slideTo: index
       });
 
-      const { infiniteScroll, transition } = this.config;
+      const { infiniteScroll, transition } = this.$props;
       const previousSlide = this.currentSlide;
       const index = infiniteScroll
         ? slideIndex
@@ -233,33 +242,39 @@ export default {
       });
     },
     slideNext() {
-      this.slideTo(this.currentSlide + this.config.itemsToSlide);
+      this.slideTo(this.currentSlide + this.itemsToSlide);
     },
     slidePrev() {
-      this.slideTo(this.currentSlide - this.config.itemsToSlide);
+      this.slideTo(this.currentSlide - this.itemsToSlide);
     },
 
     initEvents() {
       // get the element direction if not explicitly set
-      if (this.defaults.rtl === null) {
-        this.defaults.rtl = getComputedStyle(this.$el).direction === 'rtl';
-      }
+
+      this.$refs.list.removeEventListener('mousedown', this.onDragStart);
+      this.$refs.list.removeEventListener('touchstart', this.onDragStart, {
+        passive: true
+      });
+      this.$el.removeEventListener('keydown', this.onKeypress);
+      this.$el.removeEventListener('wheel', this.onWheel, { passive: false });
+
+      window.removeEventListener('resize', this.update);
 
       if (this.$props.autoPlay) {
         this.initAutoPlay();
       }
-      if (this.config.mouseDrag) {
+      if (this.mouseDrag) {
         this.$refs.list.addEventListener('mousedown', this.onDragStart);
       }
-      if (this.config.touchDrag) {
+      if (this.touchDrag) {
         this.$refs.list.addEventListener('touchstart', this.onDragStart, {
           passive: true
         });
       }
-      if (this.config.keysControl) {
+      if (this.keysControl) {
         this.$el.addEventListener('keydown', this.onKeypress);
       }
-      if (this.config.wheelControl) {
+      if (this.wheelControl) {
         this.lastScrollTime = now();
         this.$el.addEventListener('wheel', this.onWheel, { passive: false });
       }
@@ -275,14 +290,14 @@ export default {
         if (
           this.isSliding ||
           this.isDragging ||
-          (this.isHover && this.config.hoverPause) ||
+          (this.isHover && this.hoverPause) ||
           this.isFocus ||
           !this.$props.autoPlay
         ) {
           this.timer.set(this.getCurrentSlideTimeout());
           return;
         }
-        if (this.currentSlide === this.slidesCount - 1 && !this.config.infiniteScroll) {
+        if (this.currentSlide === this.slidesCount - 1 && !this.infiniteScroll) {
           this.slideTo(0);
           this.timer.set(this.getCurrentSlideTimeout());
           return;
@@ -291,16 +306,11 @@ export default {
         this.timer.set(this.getCurrentSlideTimeout());
       }, this.getCurrentSlideTimeout());
     },
-    initDefaults() {
-      this.breakpoints = this.settings.breakpoints;
-      this.defaults = assign({}, this.$props, this.settings);
-      this.config = assign({}, this.defaults);
+    updated() {
+      this.initEvents();
     },
     // updating methods
     update() {
-      if (this.breakpoints) {
-        this.updateConfig();
-      }
       this.updateDimensions();
       this.updateSlideDimensions();
       this.updateTrim();
@@ -309,11 +319,11 @@ export default {
         containerHeight: this.containerHeight,
         slideWidth: this.slideWidth,
         slideHeight: this.slideHeight,
-        settings: this.config
+        settings: this.$props
       });
     },
     updateTrim() {
-      const { trimWhiteSpace, itemsToShow, centerMode, infiniteScroll } = this.config;
+      const { trimWhiteSpace, itemsToShow, centerMode, infiniteScroll } = this.$props;
       if (!trimWhiteSpace || infiniteScroll) {
         this.trimStart = 0;
         this.trimEnd = 1;
@@ -328,34 +338,20 @@ export default {
         this.containerWidth = width;
         this.containerHeight = height;
       } else {
-        if (this.config.vertical) {
-          this.containerHeight = height - (height % this.config.itemsToShow);
+        if (this.vertical) {
+          this.containerHeight = height - (height % this.itemsToShow);
           this.containerWidth = width;
         } else {
           this.containerHeight = height;
-          this.containerWidth = width - (width % this.config.itemsToShow);
+          this.containerWidth = width - (width % this.itemsToShow);
         }
       }
     },
     updateSlideDimensions() {
-      if (this.config.vertical) {
-        this.slideHeight = this.containerHeight / this.config.itemsToShow;
+      if (this.vertical) {
+        this.slideHeight = this.containerHeight / this.itemsToShow;
       } else {
-        this.slideWidth = this.containerWidth / this.config.itemsToShow;
-      }
-    },
-    updateConfig() {
-      const breakpoints = Object.keys(this.breakpoints).sort((a, b) => b - a);
-      let matched;
-      breakpoints.some(breakpoint => {
-        matched = window.matchMedia(`(min-width: ${breakpoint}px)`).matches;
-        if (matched) {
-          this.config = assign({}, this.config, this.defaults, this.breakpoints[breakpoint]);
-          return true;
-        }
-      });
-      if (!matched) {
-        this.config = assign(this.config, this.defaults);
+        this.slideWidth = this.containerWidth / this.itemsToShow;
       }
     },
     restartTimer() {
@@ -396,11 +392,11 @@ export default {
       document.addEventListener(this.isTouch ? 'touchend' : 'mouseup', this.onDragEnd);
     },
     isInvalidDirection(deltaX, deltaY) {
-      if (!this.config.vertical) {
+      if (!this.vertical) {
         return Math.abs(deltaX) <= Math.abs(deltaY);
       }
 
-      if (this.config.vertical) {
+      if (this.vertical) {
         return Math.abs(deltaY) <= Math.abs(deltaX);
       }
 
@@ -428,15 +424,15 @@ export default {
       }
     },
     onDragEnd() {
-      const tolerance = this.config.shortDrag ? 0.5 : 0.15;
+      const tolerance = this.shortDrag ? 0.5 : 0.15;
       this.isDragging = false;
 
-      if (this.config.vertical) {
+      if (this.vertical) {
         const draggedSlides = Math.round(Math.abs(this.delta.y / this.slideHeight) + tolerance);
         this.slideTo(this.currentSlide - sign(this.delta.y) * draggedSlides);
       }
-      if (!this.config.vertical) {
-        const direction = (this.config.rtl ? -1 : 1) * sign(this.delta.x);
+      if (!this.vertical) {
+        const direction = (this.rtl ? -1 : 1) * sign(this.delta.x);
         const draggedSlides = Math.round(Math.abs(this.delta.x / this.slideWidth) + tolerance);
         this.slideTo(this.currentSlide - direction * draggedSlides);
       }
@@ -451,7 +447,7 @@ export default {
       if (key.startsWith('Arrow')) {
         event.preventDefault();
       }
-      if (this.config.vertical) {
+      if (this.vertical) {
         if (key === 'ArrowUp') {
           this.slidePrev();
         }
@@ -460,7 +456,7 @@ export default {
         }
         return;
       }
-      if (this.config.rtl) {
+      if (this.rtl) {
         if (key === 'ArrowRight') {
           this.slidePrev();
         }
@@ -508,14 +504,13 @@ export default {
     if (!window.hooper) {
       window.hooper = Obs;
     }
-    this.initDefaults();
   },
   mounted() {
     this.initEvents();
     this.addGroupListeners();
     nextTick(() => {
       this.update();
-      this.slideTo(this.config.initialSlide || 0);
+      this.slideTo(this.initialSlide || 0);
       setTimeout(() => {
         this.$emit('loaded');
         this.initialized = true;
@@ -542,8 +537,8 @@ export default {
       {
         class: {
           hooper: true,
-          'is-vertical': this.config.vertical,
-          'is-rtl': this.config.rtl
+          'is-vertical': this.vertical,
+          'is-rtl': this.rtl
         },
         tabindex: '0',
         onFocusIn: () => (this.isFocus = true),
@@ -613,7 +608,7 @@ function renderSlides(h) {
 
   // update hooper's information of the slide count.
   this.slidesCount = slides.length;
-  if (this.config.infiniteScroll) {
+  if (this.infiniteScroll) {
     slides = renderBufferSlides(h, slides);
   }
 
@@ -656,7 +651,7 @@ function renderBody(h) {
     'div',
     {
       class: 'hooper-list',
-      style: this.config.vertical ? `height: ${this.containerHeight}px` : `width: ${this.containerWidth}px`,
+      style: this.vertical ? `height: ${this.containerHeight}px` : `width: ${this.containerWidth}px`,
       ref: 'list'
     },
     children
