@@ -185,6 +185,12 @@ export default {
     }
   },
   watch: {
+    itemsToShow() {
+      this.$nextTick(() => {
+        this.updateDimensions();
+        this.updateSlideDimensions();
+      })
+    },
     group(val, oldVal) {
       if (val === oldVal) {
         return;

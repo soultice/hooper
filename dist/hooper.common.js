@@ -2758,21 +2758,30 @@ var carousel = __webpack_require__("9e47");
         var breakpoints = Object.keys(this.breakpoints).sort(function (a, b) {
           return b - a;
         });
-        var fp = undefined;
+        var currentBreakpoint = undefined;
         breakpoints.forEach(function (bp) {
           matched = window.matchMedia("(min-width: ".concat(bp, "px)")).matches;
 
           if (matched) {
-            fp = _this.breakpoints[bp];
+            currentBreakpoint = _this.breakpoints[bp];
           }
         });
-        return fp;
+        return currentBreakpoint;
       }
 
       return undefined;
     }
   },
   watch: {
+    itemsToShow: function itemsToShow() {
+      var _this2 = this;
+
+      this.$nextTick(function () {
+        _this2.updateDimensions();
+
+        _this2.updateSlideDimensions();
+      });
+    },
     group: function group(val, oldVal) {
       if (val === oldVal) {
         return;
@@ -2795,7 +2804,7 @@ var carousel = __webpack_require__("9e47");
   methods: {
     // controlling methods
     slideTo: function slideTo(slideIndex) {
-      var _this2 = this;
+      var _this3 = this;
 
       var isSource = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
@@ -2820,11 +2829,11 @@ var carousel = __webpack_require__("9e47");
       this.currentSlide = index;
       this.isSliding = true;
       window.setTimeout(function () {
-        _this2.isSliding = false;
-        _this2.currentSlide = normalizeSlideIndex(index, _this2.slidesCount);
+        _this3.isSliding = false;
+        _this3.currentSlide = normalizeSlideIndex(index, _this3.slidesCount);
 
-        _this2.$emit('afterSlide', {
-          currentSlide: _this2.currentSlide
+        _this3.$emit('afterSlide', {
+          currentSlide: _this3.currentSlide
         });
       }, transition);
       this.$emit('slide', {
@@ -2884,26 +2893,26 @@ var carousel = __webpack_require__("9e47");
     },
     // switched to using a timeout which defaults to the prop set on this component, but can be overridden on a per slide basis.
     initAutoPlay: function initAutoPlay() {
-      var _this3 = this;
+      var _this4 = this;
 
       this.timer = new Timer(function () {
-        if (_this3.isSliding || _this3.isDragging || _this3.isHover && _this3.hoverPause || _this3.isFocus || !_this3.$props.autoPlay) {
-          _this3.timer.set(_this3.getCurrentSlideTimeout());
+        if (_this4.isSliding || _this4.isDragging || _this4.isHover && _this4.hoverPause || _this4.isFocus || !_this4.$props.autoPlay) {
+          _this4.timer.set(_this4.getCurrentSlideTimeout());
 
           return;
         }
 
-        if (_this3.currentSlide === _this3.slidesCount - 1 && !_this3.infiniteScroll) {
-          _this3.slideTo(0);
+        if (_this4.currentSlide === _this4.slidesCount - 1 && !_this4.infiniteScroll) {
+          _this4.slideTo(0);
 
-          _this3.timer.set(_this3.getCurrentSlideTimeout());
+          _this4.timer.set(_this4.getCurrentSlideTimeout());
 
           return;
         }
 
-        _this3.slideNext();
+        _this4.slideNext();
 
-        _this3.timer.set(_this3.getCurrentSlideTimeout());
+        _this4.timer.set(_this4.getCurrentSlideTimeout());
       }, this.getCurrentSlideTimeout());
     },
     updated: function updated() {
@@ -2964,31 +2973,31 @@ var carousel = __webpack_require__("9e47");
       }
     },
     restartTimer: function restartTimer() {
-      var _this4 = this;
+      var _this5 = this;
 
       Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["nextTick"])(function () {
-        if (_this4.timer === null && _this4.$props.autoPlay) {
-          _this4.initAutoPlay();
+        if (_this5.timer === null && _this5.$props.autoPlay) {
+          _this5.initAutoPlay();
 
           return;
         }
 
-        if (_this4.timer) {
-          _this4.timer.stop();
+        if (_this5.timer) {
+          _this5.timer.stop();
 
-          if (_this4.$props.autoPlay) {
-            _this4.timer.set(_this4.getCurrentSlideTimeout());
+          if (_this5.$props.autoPlay) {
+            _this5.timer.set(_this5.getCurrentSlideTimeout());
 
-            _this4.timer.start();
+            _this5.timer.start();
           }
         }
       });
     },
     restart: function restart() {
-      var _this5 = this;
+      var _this6 = this;
 
       Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["nextTick"])(function () {
-        _this5.update();
+        _this6.update();
       });
     },
     // events handlers
@@ -3128,7 +3137,7 @@ var carousel = __webpack_require__("9e47");
       }
     },
     addGroupListeners: function addGroupListeners() {
-      var _this6 = this;
+      var _this7 = this;
 
       if (!this.group) {
         return;
@@ -3136,7 +3145,7 @@ var carousel = __webpack_require__("9e47");
 
       this._groupSlideHandler = function (slideIndex) {
         // set the isSource to false to prevent infinite emitting loop.
-        _this6.slideTo(slideIndex, false);
+        _this7.slideTo(slideIndex, false);
       };
 
       window.hooper.subscribe("slideGroup:".concat(this.group), this._groupSlideHandler, this); // ,
@@ -3148,20 +3157,20 @@ var carousel = __webpack_require__("9e47");
     }
   },
   mounted: function mounted() {
-    var _this7 = this;
+    var _this8 = this;
 
     this.initEvents();
     this.addGroupListeners();
     Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["nextTick"])(function () {
-      _this7.update();
+      _this8.update();
 
-      _this7.slideTo(_this7.initialSlide || 0);
+      _this8.slideTo(_this8.initialSlide || 0);
 
       setTimeout(function () {
-        _this7.$emit('loaded');
+        _this8.$emit('loaded');
 
-        _this7.initialized = true;
-      }, _this7.transition);
+        _this8.initialized = true;
+      }, _this8.transition);
     });
   },
   beforeUnmount: function beforeUnmount() {
@@ -3178,7 +3187,7 @@ var carousel = __webpack_require__("9e47");
     }
   },
   render: function render() {
-    var _this8 = this;
+    var _this9 = this;
 
     var body = renderBody.call(this, external_commonjs_vue_commonjs2_vue_amd_vue_root_["h"]);
     var rendered = Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_["h"])('section', {
@@ -3189,16 +3198,16 @@ var carousel = __webpack_require__("9e47");
       },
       tabindex: '0',
       onFocusIn: function onFocusIn() {
-        return _this8.isFocus = true;
+        return _this9.isFocus = true;
       },
       onFocusOut: function onFocusOut() {
-        return _this8.isFocus = false;
+        return _this9.isFocus = false;
       },
       onMouseOver: function onMouseOver() {
-        return _this8.isHover = true;
+        return _this9.isHover = true;
       },
       onMouseLeave: function onMouseLeave() {
-        return _this8.isHover = false;
+        return _this9.isHover = false;
       }
     }, body);
     return rendered;
