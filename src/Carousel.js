@@ -340,17 +340,12 @@ export default {
     },
     updateDimensions() {
       const { width, height } = this.$el.getBoundingClientRect();
-      if (this.itemsToShow === 1) {
+      if (this.vertical) {
+        this.containerHeight = height - (height % this.itemsToShow);
         this.containerWidth = width;
-        this.containerHeight = height;
       } else {
-        if (this.vertical) {
-          this.containerHeight = height - (height % this.itemsToShow);
-          this.containerWidth = width;
-        } else {
-          this.containerHeight = height;
-          this.containerWidth = width - (width % this.itemsToShow);
-        }
+        this.containerHeight = height;
+        this.containerWidth = width - (width % this.itemsToShow);
       }
     },
     updateSlideDimensions() {
