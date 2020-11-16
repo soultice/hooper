@@ -2199,33 +2199,35 @@ var carousel = __webpack_require__("9e47");
 
       var isSource = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
-      if (this.isSliding || slideIndex === this.currentSlide) {
+      if (slideIndex === this.currentSlide) {
         return;
       }
 
-      this.$emit('beforeSlide', {
-        currentSlide: this.currentSlide,
-        slideTo: index
-      });
       var _this$$props2 = this.$props,
           infiniteScroll = _this$$props2.infiniteScroll,
           transition = _this$$props2.transition;
       var previousSlide = this.currentSlide;
-      var index = infiniteScroll ? slideIndex : getInRange(slideIndex, this.trimStart, this.slidesCount - this.trimEnd); // Notify others if in a group and is the slide event initiator.
+      var index = infiniteScroll ? slideIndex : getInRange(slideIndex, this.trimStart, this.slidesCount - this.trimEnd);
+      this.$emit('beforeSlide', {
+        currentSlide: this.currentSlide,
+        slideTo: index
+      }); // Notify others if in a group and is the slide event initiator.
 
       if (this.group && isSource) {
-        window.hooper.fire("slideGroup:".concat(this.group), slideIndex);
+        window.hooper.fire("slideGroup:".concat(this.group), index);
       }
 
       this.currentSlide = index;
       this.isSliding = true;
       window.setTimeout(function () {
-        _this3.isSliding = false;
-        _this3.currentSlide = normalizeSlideIndex(index, _this3.slidesCount);
+        if (_this3.currentSlide == index) {
+          _this3.isSliding = false;
+          _this3.currentSlide = normalizeSlideIndex(index, _this3.slidesCount);
 
-        _this3.$emit('afterSlide', {
-          currentSlide: _this3.currentSlide
-        });
+          _this3.$emit('afterSlide', {
+            currentSlide: _this3.currentSlide
+          });
+        }
       }, transition);
       this.$emit('slide', {
         currentSlide: this.currentSlide,

@@ -211,14 +211,9 @@ export default {
   methods: {
     // controlling methods
     slideTo(slideIndex, isSource = true) {
-      if (this.isSliding || slideIndex === this.currentSlide) {
+      if (slideIndex === this.currentSlide) {
         return;
       }
-
-      this.$emit('beforeSlide', {
-        currentSlide: this.currentSlide,
-        slideTo: index
-      });
 
       const { infiniteScroll, transition } = this.$props;
       const previousSlide = this.currentSlide;
@@ -226,20 +221,27 @@ export default {
         ? slideIndex
         : getInRange(slideIndex, this.trimStart, this.slidesCount - this.trimEnd);
 
+      this.$emit('beforeSlide', {
+        currentSlide: this.currentSlide,
+        slideTo: index
+      });      
+
       // Notify others if in a group and is the slide event initiator.
       if (this.group && isSource) {
-        window.hooper.fire(`slideGroup:${this.group}`, slideIndex);
+        window.hooper.fire(`slideGroup:${this.group}`, index);
       }
 
       this.currentSlide = index;
       this.isSliding = true;
 
       window.setTimeout(() => {
-        this.isSliding = false;
-        this.currentSlide = normalizeSlideIndex(index, this.slidesCount);
-        this.$emit('afterSlide', {
-          currentSlide: this.currentSlide
-        });
+        if (this.currentSlide == index) {
+          this.isSliding = false;
+          this.currentSlide = normalizeSlideIndex(index, this.slidesCount);
+          this.$emit('afterSlide', {
+            currentSlide: this.currentSlide
+          });
+        }
       }, transition);
 
       this.$emit('slide', {
